@@ -1,12 +1,13 @@
-#include <errno.h>
 #include <stddef.h>
 // order dependent
 #include <buf/buf.h>
+#include <errno.h>
 #include <hedley/hedley.h>
 #include <linenoise.h>
 #include <println/println.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdnoreturn.h>
 #include <str/str.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -24,6 +25,32 @@ typedef struct {
     BuiltinCallback* callback;
 } BuiltinWord;
 
+static noreturn void exec_process(WordList argv) {
+    RawWordList raw_argv = BUF_NEW;
+    for (uint64_t j = 0; j < argv.len; j++) {
+        str word_dup = str_dup(argv.ptr[j]);
+        BUF_PUSH(&raw_argv, HEDLEY_CONST_CAST(char*, word_dup.ptr));
+    }
+    BUF_PUSH(&raw_argv, NULL);
+    execvp(raw_argv.ptr[0], raw_argv.ptr);
+    printfln(str_fmt ": %s", str_arg(argv.ptr[0]), strerror(errno));
+    exit(1);
+}
+
+static int run_process(WordList argv, bool should_fork) {
+    if (should_fork) {
+        pid_t pid = fork();
+        if (pid == 0) {
+            exec_process(argv);
+        }
+        int status;
+        waitpid(pid, &status, 0);
+        return status;
+    }
+
+    exec_process(argv);
+}
+
 static bool cd_command(WordList argv) {
     bool result = false;
     if (argv.len == 1) {
@@ -39,8 +66,22 @@ static bool cd_command(WordList argv) {
     return result;
 }
 
+static bool exit_command(WordList argv) {
+    (void)argv;
+    exit(0);
+}
+
+static bool exec_command(WordList argv) {
+    WordList actual_argv = BUF_REF(argv.ptr + 1, argv.len - 1);
+    run_process(actual_argv, false);
+    // unreachable
+    abort();
+}
+
 static const BuiltinWord BUILTIN_WORDS[] = {
     {str_lit_c("cd"), cd_command},
+    {str_lit_c("exit"), exit_command},
+    {str_lit_c("exec"), exec_command},
 };
 
 typedef struct {
@@ -80,20 +121,7 @@ static bool execute_command(str line) {
         failed = negate_result ? !failed : failed;
         result = failed;
     } else {
-        pid_t pid = fork();
-        if (pid == 0) {
-            RawWordList argv = BUF_NEW;
-            for (uint64_t j = i; j < words.len; j++) {
-                str word_dup = str_dup(words.ptr[j]);
-                BUF_PUSH(&argv, HEDLEY_CONST_CAST(char*, word_dup.ptr));
-            }
-            BUF_PUSH(&argv, NULL);
-            execvp(argv.ptr[0], argv.ptr);
-            printfln(str_fmt ": %s", str_arg(words.ptr[i]), strerror(errno));
-            exit(1);
-        }
-        int status;
-        waitpid(pid, &status, 0);
+        int status = run_process(words, true);
         bool failed = WEXITSTATUS(status) != 0;
         failed = negate_result ? !failed : failed;
         result = failed;

@@ -36,6 +36,8 @@
 #define BUF_REF(p, sz) \
     { .ptr = (p), .len = (sz), .cap = (sz), .ref = true }
 
+#define BUF_AS_REF(buf) BUF_REF((buf).ptr, (buf).len)
+
 #define BUF_ARRAY(a) BUF_REF((a), sizeof(a) / sizeof((a)[0]))
 
 #define BUF_OWNER(p, sz) \
@@ -73,9 +75,21 @@
 
 #define BUF_FIND(buf, val, eq, target) \
     do { \
+        *(target) = NULL; \
         for (uint64_t i = 0; i < (buf).len; i++) { \
             if (eq((buf).ptr[i], (val))) { \
                 *(target) = &(buf).ptr[i]; \
+                break; \
+            } \
+        } \
+    } while (false)
+
+#define BUF_INDEX(buf, val, eq, target) \
+    do { \
+        *(target) = (buf).len; \
+        for (uint64_t i = 0; i < (buf).len; i++) { \
+            if (eq((buf).ptr[i], (val))) { \
+                *(target) = i; \
                 break; \
             } \
         } \
@@ -89,3 +103,18 @@
             BUF_PUSH(buf, (other).ptr[i]); \
         } \
     } while (false)
+
+#define BUF_SHIFT(buf, n) \
+    do { \
+        BUF_ASSERT((buf)->ref); \
+        (buf)->ptr += (n); \
+        (buf)->len -= (n); \
+        (buf)->cap -= (n); \
+    } while (false)
+
+#define BUF_SHIFTED(buf, n) BUF_REF((buf).ptr + (n), (buf).len - (n))
+
+#define BUF_BEFORE(buf, n) BUF_REF((buf).ptr, (n))
+#define BUF_AFTER(buf, n) BUF_SHIFTED(buf, n)
+#define BUF_SUB(buf, start, len) BUF_REF((buf).ptr + (start), (len))
+#define BUF_SUB_BOUNDS(buf, start, end) BUF_REF((buf).ptr + (start), (end) - (start))

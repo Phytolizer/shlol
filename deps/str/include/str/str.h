@@ -68,6 +68,10 @@ static inline const char* str_end(const str s) {
     return str_ptr(s) + str_len(s);
 }
 
+static inline char str_getc(const str s, size_t i) {
+    return (char)(i < str_len(s) ? str_ptr(s)[i] : '\0');
+}
+
 // test if the string is empty
 static inline bool str_is_empty(const str s) {
     return str_len(s) == 0;
@@ -235,6 +239,8 @@ str_find_result str_find_str(str src, str patt);
 
 #define str_find(s, val) \
     _Generic((val), char : str_find_char, int : str_find_char, str : str_find_str)(s, val)
+
+str_find_result str_find_any(str src, str char_set);
 
 // comparison functions
 typedef int (*str_cmp_func)(const void*, const void*);

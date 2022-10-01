@@ -452,6 +452,16 @@ str_find_result str_find_str(str src, str patt) {
     return (str_find_result){.found = false};
 }
 
+str_find_result str_find_any(str src, str char_set) {
+    for (size_t i = 0; i < str_len(src); i++) {
+        if (str_find_char(char_set, src.ptr[i]).found) {
+            return (str_find_result){.found = true, .pos = i};
+        }
+    }
+
+    return (str_find_result){.found = false};
+}
+
 // comparison functions
 int str_order_asc(const void* const s1, const void* const s2) {
     return str_cmp(*(const str*)s1, *(const str*)s2);

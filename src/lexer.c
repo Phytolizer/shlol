@@ -1,6 +1,7 @@
 #include "lexer.h"
 
 #include <ctype.h>
+#include <linenoise.h>
 
 static char peek(const Lexer* lexer, size_t n) {
     if (lexer->position + n >= str_len(lexer->source)) {

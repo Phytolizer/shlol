@@ -31,7 +31,21 @@ int main(void) {
         linenoiseHistoryAdd(raw_line);
         str line = str_acquire(raw_line);
 
-        Parser parser = parser_new(line);
+        while (str_has_suffix(line, str_lit("\\"))) {
+            char* raw_line = linenoise("> ");
+            if (raw_line == NULL) {
+                break;
+            }
+
+            linenoiseHistoryAdd(raw_line);
+            str line2 = str_acquire(raw_line);
+            str full_line = str_cat_ret(str_upto(line, str_len(line) - 1), line2);
+            str_free(line);
+            str_free(line2);
+            line = full_line;
+        }
+
+        Parser parser = parser_new(str_ref(line));
         red_prompt = parser_parse(&parser);
         str_free(line);
     }

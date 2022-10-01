@@ -1,0 +1,6 @@
+# inc files are C, usually X-macros though
+*.inc linguist-language=C
+# cmake-in stuff is actually C, just has CMake macros in it
+*.cmake-in linguist-language=C
+# not vendored, i just put auxiliary libs under deps
+deps/** -linguist-vendored

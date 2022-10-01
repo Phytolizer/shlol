@@ -42,22 +42,22 @@ Str2U64Result str2u64(str in, int base) {
         return (Str2U64Result){.err = EINVAL};
     }
 
-    const char* save = in.ptr;
-    const char* s = save;
-    while (char_is_space(*s)) {
+    size_t save = 0;
+    size_t s = save;
+    while (char_is_space(str_getc(in, s))) {
         s++;
     }
-    if (*s == '\0') {
+    if (s == str_len(in)) {
         // no number
         return (Str2U64Result){.endptr = in.ptr};
     }
 
-    if (*s == '+') {
+    if (str_getc(in, s) == '+') {
         s++;
     }
 
-    if (*s == '0') {
-        if ((base == 0 || base == 16) && char_to_upper(s[1]) == 'X') {
+    if (str_getc(in, s) == '0') {
+        if ((base == 0 || base == 16) && char_to_upper(str_getc(in, s + 1)) == 'X') {
             base = 16;
             s += 2;
         } else if (base == 0) {
@@ -69,11 +69,11 @@ Str2U64Result str2u64(str in, int base) {
 
     save = s;
 
-    const char* end = NULL;
+    size_t end = str_len(in);
     uint64_t cutoff = cutoff_tab[base - 2];
     uint64_t cutlim = cutlim_tab[base - 2];
     bool overflow = false;
-    char c = *s;
+    char c = str_getc(in, s);
 
     uint64_t i = 0;
 
@@ -102,7 +102,7 @@ Str2U64Result str2u64(str in, int base) {
         }
 
         s++;
-        c = *s;
+        c = str_getc(in, s);
     }
 
     if (s == save) {
@@ -116,7 +116,7 @@ Str2U64Result str2u64(str in, int base) {
         return (Str2U64Result){.err = ERANGE};
     }
 
-    return (Str2U64Result){.value = i, .endptr = end};
+    return (Str2U64Result){.value = i, .endptr = str_ptr(in) + end};
 }
 
 Str2I64Result str2i64(str s, int base) {

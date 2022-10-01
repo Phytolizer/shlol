@@ -1,3 +1,6 @@
 [submodule "deps/linenoise/repo"]
 	path = deps/linenoise/repo
 	url = https://github.com/msteveb/linenoise
+[submodule "tests"]
+	path = tests
+	url = https://github.com/tokenrove/build-your-own-shell.git

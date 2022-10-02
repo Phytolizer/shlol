@@ -32,7 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
-#include <hedley.h>
+#include <hedley/hedley.h>
 #include <stdbool.h>
 #include <stdio.h>
 

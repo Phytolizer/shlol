@@ -12,6 +12,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "executor.h"
 #include "parser.h"
 
 #define scope(begin, end) for (bool i = (begin, false); !i; (i = true, end))
@@ -46,8 +47,11 @@ int main(void) {
         }
 
         Parser parser = parser_new(str_ref(line));
-        red_prompt = parser_parse(&parser);
-        str_free(line);
+        SyntaxTree tree = parser_parse(&parser);
+        defer((syntax_tree_free(tree), str_free(line))) {
+            int status = execute_tree(tree);
+            red_prompt = status != 0;
+        }
     }
 
     linenoiseHistorySave("shlol.history");

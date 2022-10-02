@@ -1,6 +1,7 @@
 #ifndef PARSER_H_
 #define PARSER_H_
 
+#include "ast.h"
 #include "lexer.h"
 
 typedef struct {
@@ -8,6 +9,6 @@ typedef struct {
 } Parser;
 
 Parser parser_new(str source);
-bool parser_parse(Parser* parser);
+SyntaxTree parser_parse(Parser* parser);
 
 #endif  // PARSER_H_

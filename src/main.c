@@ -18,6 +18,8 @@
 #define scope(begin, end) for (bool i = (begin, false); !i; (i = true, end))
 #define defer(expr) for (bool i = false; !i; (i = true, expr))
 
+typedef BUF(str) LineBuf;
+
 int main(void) {
     linenoiseHistoryLoad("shlol.history");
 
@@ -30,6 +32,7 @@ int main(void) {
         }
 
         linenoiseHistoryAdd(raw_line);
+        LineBuf all_lines = BUF_NEW;
         str line = str_acquire(raw_line);
 
         while (str_has_suffix(line, str_lit("\\"))) {
@@ -45,13 +48,39 @@ int main(void) {
             str_free(line2);
             line = full_line;
         }
+        BUF_PUSH(&all_lines, line);
 
         Parser parser = parser_new(str_ref(line));
-        SyntaxTree tree = parser_parse(&parser);
-        defer((syntax_tree_free(tree), str_free(line))) {
+        ParseResult parse_result = parser_parse(&parser);
+        if (!parse_result.present) {
+            red_prompt = true;
+            for (uint64_t i = 0; i < all_lines.len; i++) {
+                str_free(all_lines.ptr[i]);
+            }
+            BUF_FREE(all_lines);
+            continue;
+        }
+        while (!parse_result.value.left) {
+            char* raw_line = linenoise("> ");
+            if (raw_line == NULL) {
+                break;
+            }
+
+            linenoiseHistoryAdd(raw_line);
+            str line2 = str_acquire(raw_line);
+            BUF_PUSH(&all_lines, line2);
+
+            parse_result = parser_resume_parse(&parser, parse_result.value.get.right, line2);
+        }
+        SyntaxTree tree = parse_result.value.get.left;
+        defer((syntax_tree_free(tree))) {
             int status = execute_tree(tree);
             red_prompt = status != 0;
         }
+        for (uint64_t i = 0; i < all_lines.len; i++) {
+            str_free(all_lines.ptr[i]);
+        }
+        BUF_FREE(all_lines);
     }
 
     linenoiseHistorySave("shlol.history");

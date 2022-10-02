@@ -15,6 +15,7 @@ add_subdirectory(deps/str)
 add_subdirectory(deps/println)
 add_subdirectory(deps/linenoise)
 add_subdirectory(deps/buf)
+add_subdirectory(deps/sum)
 
 add_executable(
   shlol src/main.c src/lexer.c src/parser.c src/ast.c src/executor.c
@@ -22,5 +23,5 @@ add_executable(
 target_compile_features(shlol PRIVATE c_std_17)
 target_link_libraries(
   shlol PRIVATE str::str println::println linenoise::linenoise buf::buf
-                hedley::hedley
+                hedley::hedley sum::sum
 )

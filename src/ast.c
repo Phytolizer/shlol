@@ -40,7 +40,10 @@ void command_free(Command* command) {
         case COMMAND_TYPE_SUBSHELL:
             statements_free(((SubshellCommand*)command)->statements);
             break;
+        default:
+            abort();
     }
+    free(command);
 }
 
 void command_list_free(CommandList list) {

@@ -66,7 +66,7 @@
             "displayName": "x64 Debug (Sanitizers)",
             "inherits": ["dev", "wflags"],
             "cacheVariables": {
-                "MINSC_SANITIZE": "ON"
+                "SHLOL_SANITIZE": "ON"
             }
         },
         {

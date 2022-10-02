@@ -25,3 +25,10 @@ target_link_libraries(
   shlol PRIVATE str::str println::println linenoise::linenoise buf::buf
                 hedley::hedley sum::sum
 )
+
+if(SHLOL_SANITIZE)
+  target_compile_options(
+    shlol PRIVATE -fsanitize=address -fno-omit-frame-pointer
+  )
+  target_link_options(shlol PRIVATE -fsanitize=address)
+endif()

@@ -73,10 +73,9 @@ int main(void) {
             parse_result = parser_resume_parse(&parser, parse_result.value.get.right, line2);
         }
         SyntaxTree tree = parse_result.value.get.left;
-        defer((syntax_tree_free(tree))) {
-            int status = execute_tree(tree);
-            red_prompt = status != 0;
-        }
+        int status = execute_tree(tree);
+        red_prompt = status != 0;
+        syntax_tree_free(tree);
         for (uint64_t i = 0; i < all_lines.len; i++) {
             str_free(all_lines.ptr[i]);
         }

@@ -186,7 +186,7 @@ static str str_vprintf(const char* const fmt, va_list ap) {
 
     (void)vsnprintf(s, (size_t)n + 1, fmt, ap);
 
-    return str_acquire_chars(s, n);
+    return str_acquire_chars(s, (size_t)n);
 }
 
 str str_printf(const char* fmt, ...) {
@@ -361,7 +361,8 @@ static const void* memmem(const void* s, const size_t len, const void* patt, siz
 
     --patt_len;
 
-    for (cs = memchr(cs, c, len); cs && cs + patt_len < end; ++cs, cs = memchr(cs, c, end - cs)) {
+    for (cs = memchr(cs, c, len); cs && cs + patt_len < end;
+         ++cs, cs = memchr(cs, c, (size_t)(end - cs))) {
         if (memcmp(cs + 1, cpatt, patt_len) == 0) {
             return cs;
         }
@@ -379,12 +380,12 @@ bool str_partition(const str src, const str patt, str* const prefix, str* const 
 
         if (s) {
             if (prefix) {
-                str_assign(prefix, str_ref_chars(str_ptr(src), s - str_ptr(src)));
+                str_assign(prefix, str_ref_chars(str_ptr(src), (size_t)(s - str_ptr(src))));
             }
 
             if (suffix) {
                 s += patt_len;
-                str_assign(suffix, str_ref_chars(s, str_end(src) - s));
+                str_assign(suffix, str_ref_chars(s, (size_t)(str_end(src) - s)));
             }
 
             return true;
@@ -420,7 +421,7 @@ str_find_result str_find_last_str(str src, str patt) {
 
         while (s >= src.ptr) {
             if (memcmp(s, patt.ptr, patt.len) == 0) {
-                return (str_find_result){.found = true, .pos = s - src.ptr};
+                return (str_find_result){.found = true, .pos = (size_t)(s - src.ptr)};
             }
 
             --s;
@@ -434,7 +435,7 @@ str_find_result str_find_char(str src, char ch) {
     const char* s = memchr(str_ptr(src), ch, src.len);
 
     if (s) {
-        return (str_find_result){.found = true, .pos = s - str_ptr(src)};
+        return (str_find_result){.found = true, .pos = (size_t)(s - str_ptr(src))};
     }
 
     return (str_find_result){.found = false};
@@ -445,7 +446,7 @@ str_find_result str_find_str(str src, str patt) {
         const char* s = memmem(str_ptr(src), src.len, str_ptr(patt), patt.len);
 
         if (s) {
-            return (str_find_result){.found = true, .pos = s - str_ptr(src)};
+            return (str_find_result){.found = true, .pos = (size_t)(s - str_ptr(src))};
         }
     }
 
@@ -518,7 +519,7 @@ size_t str_partition_range(bool (*pred)(const str), str* const array, const size
         }
     }
 
-    return p - array;
+    return (size_t)(p - array);
 }
 
 // unique partitioning
@@ -542,7 +543,7 @@ size_t str_unique_range(str* const array, const size_t count) {
         }
     }
 
-    return p + 1 - array;
+    return (size_t)(p + 1 - array);
 }
 
 // tokeniser
@@ -592,7 +593,7 @@ bool str_tok(str* const dest, str_tok_state* const state) {
     }
 
     state->src = end;
-    str_assign(dest, str_ref_chars(begin, end - begin));
+    str_assign(dest, str_ref_chars(begin, (size_t)(end - begin)));
 
     return true;
 }

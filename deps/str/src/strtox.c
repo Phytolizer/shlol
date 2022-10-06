@@ -21,17 +21,18 @@ static bool char_is_letter(char c) {
 
 #define MKTAB(f) \
     { \
-        f(2), f(3), f(4), f(5), f(6), f(7), f(8), f(9), f(10), f(11), f(12), f(13), f(14), f(15), \
-            f(16), f(17), f(18), f(19), f(20), f(21), f(22), f(23), f(24), f(25), f(26), f(27), \
-            f(28), f(29), f(30), f(31), f(32), f(33), f(34), f(35), f(36) \
+        f(2U), f(3U), f(4U), f(5U), f(6U), f(7U), f(8U), f(9U), f(10U), f(11U), f(12U), f(13U), \
+            f(14U), f(15U), f(16U), f(17U), f(18U), f(19U), f(20U), f(21U), f(22U), f(23U), \
+            f(24U), f(25U), f(26U), f(27U), f(28U), f(29U), f(30U), f(31U), f(32U), f(33U), \
+            f(34U), f(35U), f(36U) \
     }
 
-static int64_t str2u64_cutoff(int i) {
-    return INT64_MAX / i;
+static uint64_t str2u64_cutoff(unsigned int i) {
+    return UINT64_MAX / i;
 }
 
-static int64_t str2u64_cutlim(int i) {
-    return INT64_MAX % i;
+static uint64_t str2u64_cutlim(unsigned int i) {
+    return UINT64_MAX % i;
 }
 
 Str2U64Result str2u64(str in, int base) {
@@ -97,8 +98,8 @@ Str2U64Result str2u64(str in, int base) {
         if (i > cutoff || (i == cutoff && (uint8_t)c > cutlim)) {
             overflow = true;
         } else {
-            i *= (int64_t)base;
-            i += c;
+            i *= (uint64_t)base;
+            i += (uint64_t)c;
         }
 
         s++;
